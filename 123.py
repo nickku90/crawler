@@ -1,42 +1,52 @@
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+import re
+import datetime
+import random
 
-sprintf(&v13,%s%02X , &v13, *(&v9 + v3++) ^ *(&v6 + i))
-sprint(str,%d,num)
+pages=set()
+random.seed(datetime.datetime.now())
 
+def getInternalLinks(bsObj,includeUrl):
+    internalLinks=[]
+    for link in bsObj.findAll("a",href=re.compile("^(/|.*"+includeUrl+")")):
+        if link.attrs["href"] is not None:
+            if link.attrs["href"] not in internalLinks:
+                internalLinks.append(link.attrs["href"])
+    return internalLinks
 
-5B134977135E7D13
-5b1
+def getExternalLinks(bsObj,excludeUrl):
+    externalLinks=[]
+    for link in bsObj.findAll("a",href=re.compile("^(http|www)((?!"+excludeUrl+").)*$")):
+        if link.attrs["href"] is not None:
+            if link.attrs["href"] not in externalLinks:
+                externalLinks.append(link.attrs["href"])
+    return externalLinks
 
-0011 0101   0011 0001
-
-
-0100 1011(k)
-0101 1011  
-0001 0000
-
-0001 0011
-0010 0000
-0011 0011(3)
-
-0100 1001
-0011 0000
-0111 1001(y)
-
-15 16 8 4 2 1
-15 14 7 8 4 2 1
-
-11 10 5 4 2 1
-11 12 6 3 2 1
-
-601605Cb
-
-100401071
- 601605cb
+def splitAddress(address):
+    addressParts=address.replace("http://","").split("/")
+    return addressParts
 
 
+allExtLinks=set()
+allIntLinks=set()
+def getAllExternalLinks(siteUrl):
+    html=urlopen(siteUrl)
+    bsObj=BeautifulSoup(html)
+    internalLinks=getInternalLinks(bsObj,splitAddress(siteUrl)[0])
+    externalLinks=getExternalLinks(bsObj,splitAddress(siteUrl)[0])
+    for link in externalLinks:
+        if link not in allExtLinks:
+            allExtLinks.add(link)
+            print(link)
+    for link in internalLinks:
+        if link not in allIntLinks:
+            print("About to get link: "+link)
+            allIntLinks.add(link)
+            getAllExternalLinks(link)
+    getAllExternalLinks("http://oreilly.com")
 
 
+siteUrl="https://www.ntu.edu.tw/"
+getAllExternalLinks(siteUrl)
 
-
-
-
-    
